@@ -1,0 +1,50 @@
+# Seed URLs for Qatar Visa Guide Crawler
+
+## Primary Immigration Pages
+
+https://www.visaguideqatar.com/
+https://www.visaguideqatar.com/visas/
+
+## Work Visas
+https://www.visaguideqatar.com/work-visa/
+https://www.visaguideqatar.com/work-permit/
+https://www.visaguideqatar.com/employment-visa/
+
+## Family Visas
+https://www.visaguideqatar.com/family-visa/
+https://www.visaguideqatar.com/spouse-visa/
+https://www.visaguideqatar.com/dependent-visa/
+
+## Business Visas
+https://www.visaguideqatar.com/business-visa/
+https://www.visaguideqatar.com/investor-visa/
+https://www.visaguideqatar.com/commercial-visa/
+
+## Tourist & Visit Visas
+https://www.visaguideqatar.com/tourist-visa/
+https://www.visaguideqatar.com/visit-visa/
+https://www.visaguideqatar.com/visa-on-arrival/
+https://www.visaguideqatar.com/visa-free-entry/
+
+## Residence Permits
+https://www.visaguideqatar.com/residence-permit/
+https://www.visaguideqatar.com/permanent-residence/
+https://www.visaguideqatar.com/residence-card/
+
+## Visa Processes
+https://www.visaguideqatar.com/visa-extension/
+https://www.visaguideqatar.com/visa-renewal/
+https://www.visaguideqatar.com/visa-transfer/
+https://www.visaguideqatar.com/visa-cancellation/
+
+## Requirements
+https://www.visaguideqatar.com/entry-requirements/
+https://www.visaguideqatar.com/visa-requirements/
+https://www.visaguideqatar.com/visa-application/
+
+## Notes
+
+- Add more specific URLs as discovered during crawling
+- URLs are filtered by the classifier before crawling
+- Only immigration/visa-related content is ingested
+- Non-relevant pages (tourism, news, ads) are automatically filtered out

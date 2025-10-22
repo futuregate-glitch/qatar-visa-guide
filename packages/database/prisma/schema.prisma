@@ -1,0 +1,171 @@
+// Prisma schema for Qatar Visa Guide - Azure SQL Database
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// Source tracking table - tracks the raw web pages
+model Source {
+  id              Int       @id @default(autoincrement())
+  sourceUrl       String    @unique @map("source_url") @db.NVarChar(1000)
+  urlHash         String    @map("url_hash") @db.NVarChar(64)
+  firstSeenAt     DateTime  @default(now()) @map("first_seen_at")
+  lastScrapedAt   DateTime  @updatedAt @map("last_scraped_at")
+  etag            String?   @db.NVarChar(200)
+  statusCode      Int       @default(0) @map("status_code")
+  rawHtml         Bytes?    @map("raw_html") @db.VarBinary(Max)
+  contentHash     String?   @map("content_hash") @db.NVarChar(64)
+  
+  pages           Page[]
+  
+  @@index([urlHash])
+  @@index([lastScrapedAt])
+  @@map("sources")
+}
+
+// Parsed page content
+model Page {
+  id              Int       @id @default(autoincrement())
+  sourceId        Int       @map("source_id")
+  title           String    @db.NVarChar(500)
+  slug            String    @db.NVarChar(200)
+  summary         String?   @db.NVarChar(2000)
+  lastUpdatedOn   DateTime? @map("last_updated_on") @db.Date
+  contentText     String    @map("content_text") @db.NVarChar(Max)
+  contentMarkup   String?   @map("content_markup") @db.NVarChar(Max)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  source          Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  visaTypes       VisaType[]
+  changes         Change[]
+  
+  @@index([sourceId])
+  @@index([title, lastUpdatedOn])
+  @@index([slug])
+  @@map("pages")
+}
+
+// Visa type definitions
+model VisaType {
+  id              Int       @id @default(autoincrement())
+  pageId          Int       @map("page_id")
+  name            String    @db.NVarChar(300)
+  category        String?   @db.NVarChar(100)
+  purpose         String?   @db.NVarChar(200)
+  audience        String?   @db.NVarChar(200)
+  isActive        Boolean   @default(true) @map("is_active")
+  
+  page            Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  eligibility     EligibilityCriterion[]
+  documents       RequiredDocument[]
+  fees            Fee[]
+  processingTimes ProcessingTime[]
+  steps           Step[]
+  externalLinks   ExternalLink[]
+  
+  @@index([pageId])
+  @@index([name, category, purpose, audience, isActive])
+  @@map("visa_types")
+}
+
+// Eligibility criteria for visa types
+model EligibilityCriterion {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  criterion       String    @db.NVarChar(2000)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId])
+  @@map("eligibility_criteria")
+}
+
+// Required documents for visa types
+model RequiredDocument {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  docName         String    @map("doc_name") @db.NVarChar(500)
+  notes           String?   @db.NVarChar(2000)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId])
+  @@map("required_documents")
+}
+
+// Fee information
+model Fee {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  feeName         String    @map("fee_name") @db.NVarChar(500)
+  amount          Decimal?  @db.Decimal(10, 2)
+  currency        String?   @db.NVarChar(10)
+  notes           String?   @db.NVarChar(1000)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId])
+  @@index([amount])
+  @@map("fees")
+}
+
+// Processing time information
+model ProcessingTime {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  timelineLabel   String    @map("timeline_label") @db.NVarChar(500)
+  minDays         Int?      @map("min_days")
+  maxDays         Int?      @map("max_days")
+  notes           String?   @db.NVarChar(1000)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId])
+  @@map("processing_times")
+}
+
+// Step-by-step application process
+model Step {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  stepOrder       Int       @map("step_order")
+  stepTitle       String    @map("step_title") @db.NVarChar(500)
+  stepDetail      String    @map("step_detail") @db.NVarChar(Max)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId, stepOrder])
+  @@map("steps")
+}
+
+// External links (official forms, government portals)
+model ExternalLink {
+  id              Int       @id @default(autoincrement())
+  visaTypeId      Int       @map("visa_type_id")
+  linkTitle       String    @map("link_title") @db.NVarChar(500)
+  linkUrl         String    @map("link_url") @db.NVarChar(1000)
+  
+  visaType        VisaType  @relation(fields: [visaTypeId], references: [id], onDelete: Cascade)
+  
+  @@index([visaTypeId])
+  @@map("external_links")
+}
+
+// Change tracking for pages
+model Change {
+  id              Int       @id @default(autoincrement())
+  pageId          Int       @map("page_id")
+  scrapedAt       DateTime  @default(now()) @map("scraped_at")
+  diffSummary     String    @map("diff_summary") @db.NVarChar(Max)
+  
+  page            Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  @@index([pageId, scrapedAt])
+  @@map("changes")
+}

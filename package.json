@@ -1,0 +1,30 @@
+{
+  "name": "qatar-visa-guide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade Qatar visa & immigration information search platform",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "etl:crawl": "npm run crawl --workspace=etl",
+    "etl:dev": "npm run dev --workspace=etl",
+    "db:migrate": "npm run migrate --workspace=database",
+    "db:seed": "npm run seed --workspace=database",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.55.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
